@@ -1,0 +1,44 @@
+
+
+
+.unp-sliding-pane-content {
+    height: 100%;
+    position: relative;
+}
+
+
+.unp-sliding-pane-content-side-by-side-content {
+    position: relative;
+    min-width: 0px;
+    flex:1 0;
+}
+
+.unp-sliding-pane.closing {
+    transform: translateX(100%);
+}
+
+.unp-sliding-pane {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    right:0;
+    background-color: white;
+    display: flex;
+
+}
+.unp-sliding-pane.side-by-side {
+    position: absolute;
+}
+
+.unp-sliding-pane-background {
+    position: fixed;
+    top:0;
+    left:0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0,0,0,0.3);
+}
+
+.unp-sliding-pane-background.transparent {
+    background-color: transparent;
+}
