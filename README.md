@@ -8,7 +8,7 @@ Sliding pane component used for react, providing the following features:
 # Install
 
 ```shell
-npm install @unparallel/sliding-panes
+npm install @unparallel/react-sliding-panes
 ```
 
 # Usage
