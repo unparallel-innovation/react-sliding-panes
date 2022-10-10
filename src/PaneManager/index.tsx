@@ -8,10 +8,6 @@ import lodash from 'lodash'
 type PaneContent = (paneManagerControls: PaneManagerControls)=>React.ReactNode
 
 
-export interface SidePane {
-    content: PaneContent,
-    shouldClose?:()=>boolean
-}
 
 
 
@@ -20,17 +16,23 @@ export interface SidePane {
 type PaneManagerContent = (paneManagerControls:PaneManagerControls)=>React.ReactNode
 
 export enum ViewMode {
-    Default,
-    FullScreen
+    Default="default",
+    FullScreen="fullscreen"
 
 }
 
+export interface SidePane {
+    content: PaneContent,
+    shouldClose?:()=>boolean,
+    onClose?:()=>void
+}
 
 
 export interface Pane {
     content: PaneContent,
     viewMode?: ViewMode,
-    shouldClose?:()=>boolean
+    shouldClose?:()=>boolean,
+    onClose?:()=>void
 }
 
 
@@ -53,14 +55,16 @@ interface PaneManagerProps {
     paneStartPadding: number,
     paneClassName?: string,
     paneBackgroundClassName?:string,
-    paneContentClassName?: string
+    paneContentClassName?: string,
+    onPaneClose?:(index: number)=>void,
+    onPaneOpen?:(index: number, pane:Pane)=>void
 }
 
 
 export interface PaneManagerControls {
     addPane: (pane:Pane)=>void,
-    closePane: (index:number)=>void,
-    closeLastPane: ()=>void,
+    closePane: (index:number,callback?:()=>void)=>void,
+    closeLastPane: (callback?:()=>void)=>void,
     setSidePane: (sidePane: SidePane)=>void,
     closeSidePane :()=>void
 }
@@ -90,7 +94,7 @@ class PaneManager extends React.Component<PaneManagerProps, PaneManagerState>{
         this.setPaneDistance = this.setPaneDistance.bind(this)
         this.setSidePane = this.setSidePane.bind(this)
         this.closeSidePane = this.closeSidePane.bind(this)
-
+        this.closeLastPane = this.closeLastPane.bind(this)
 
         this.paneRefs = []
         this.contentRef = React.createRef()
@@ -127,6 +131,9 @@ class PaneManager extends React.Component<PaneManagerProps, PaneManagerState>{
             return {panes}
 
         },()=>{
+            const index: number = this.state.panes.length - 1
+            const onPaneOpen = this.props.onPaneOpen;
+            typeof onPaneOpen === "function" &&  onPaneOpen(index, this.state.panes[index])
             this.setPaneDistance()
             setTimeout(this.setPaneDistance,this.props.timeoutMS)
         })
@@ -155,7 +162,11 @@ class PaneManager extends React.Component<PaneManagerProps, PaneManagerState>{
     }
 
 
-    closePane(paneIndex: number ): void{
+    closePane(paneIndex: number , callback?:()=>void): void{
+        console.log("closePane",callback)
+        if(paneIndex<0){
+            return
+        }
         const paneIndexes: number[] = range(paneIndex,this.state.panes.length)
         const paneIndexesToClose: number[] = []
 
@@ -164,9 +175,13 @@ class PaneManager extends React.Component<PaneManagerProps, PaneManagerState>{
             const paneInstance = this.paneRefs[i]
 
             if(
-                (!paneInstance?.state.sidePane?.shouldClose || paneInstance.state.sidePane.shouldClose()) &&
+                (
+                    !paneInstance?.state.sidePane
+                    || paneInstance.closeSidePane()
+                ) &&
                 (!pane.shouldClose || pane.shouldClose())
             ){
+
                 paneIndexesToClose.push(i)
             }else{
                 break;
@@ -180,8 +195,20 @@ class PaneManager extends React.Component<PaneManagerProps, PaneManagerState>{
                 setTimeout(()=>{
                     this.setState(state=>{
                         const panes = [...state.panes]
-                        return {panes:panes.slice(0,panes.length-paneIndexesToClose.length),isPaneClosing:[]}
-                    },this.setPaneDistance)
+                        const newPanes = panes.slice(0,panes.length-paneIndexesToClose.length)
+                        const lastIndex = paneIndexesToClose[paneIndexesToClose.length -1]
+
+                        for(let index=lastIndex ;index>=paneIndexesToClose[0];index--){
+                            this.props.onPaneClose?.(index)
+                            const cb = state.panes[index]?.onClose
+                            typeof cb === "function" && cb()
+                        }
+                        return {panes:newPanes,isPaneClosing:[]}
+                    },()=>{
+
+                        this.setPaneDistance()
+                        typeof callback == "function" && callback()
+                    })
                 },this.props.timeoutMS)
             })
         }
@@ -242,6 +269,11 @@ class PaneManager extends React.Component<PaneManagerProps, PaneManagerState>{
         return null;
     }
 
+    closeLastPane(callback?: (() => void)){
+        console.log("closeLastPane",callback)
+        this.closePane(this.state.panes.length - 1,callback)
+    }
+
     renderMainPane(index: number): React.ReactElement{
         const pane:Pane = this.state.panes[index]
 
@@ -249,7 +281,7 @@ class PaneManager extends React.Component<PaneManagerProps, PaneManagerState>{
             <SlidingPane
                 onClose={()=>{this.closePane(this.state.panes.length - 1) }}
                 ref={e=>this.paneRefs[index] = e}
-                zIndex={this.props.baseZIndex + (index)*100}
+                zIndex={this.props.baseZIndex + (index)*2}
                 key={index}
                 fullscreen={pane.viewMode === ViewMode.FullScreen}
                 screenWidth={this.getPaneWidth(index)}
@@ -263,7 +295,7 @@ class PaneManager extends React.Component<PaneManagerProps, PaneManagerState>{
                 {(paneControls => (
                     pane.content({
                         closePane:this.closePane,
-                        closeLastPane:() => {this.closePane(this.state.panes.length - 1)  },
+                        closeLastPane:this.closeLastPane,
                         setSidePane: this.setSidePane,
                         closeSidePane: this.closeSidePane,
                         addPane: this.addPane
@@ -328,7 +360,7 @@ class PaneManager extends React.Component<PaneManagerProps, PaneManagerState>{
             <div className={"pane-manager"} ref={this.contentRef}>
                 {this.props.children({
                     addPane:this.addPane,
-                    closeLastPane:() => this.closePane(this.state.panes.length - 1),
+                    closeLastPane:this.closeLastPane,
                     closePane:this.closePane,
                     closeSidePane:()=>{},
                     setSidePane:()=>{}

@@ -24,7 +24,7 @@ interface CustomSlidingPaneProps {
     contentClassName?:string
 }
 
-const Z_INDEX_STEP:number = 50;
+const Z_INDEX_STEP:number = 1;
 
 
 interface CustomSlidingPaneState {
@@ -77,14 +77,18 @@ export class SlidingPane extends React.Component<CustomSlidingPaneProps, CustomS
 
     }
 
-  closeSidePane(){
-        if(!this.state.sidePane?.shouldClose || this.state.sidePane.shouldClose()){
+  closeSidePane(callback?:()=>void): boolean{
+        const shouldClose = !this.state.sidePane?.shouldClose || this.state.sidePane.shouldClose()
+        if(shouldClose){
             this.setState({isSidePaneClosing:true},()=>{
                 this.timeoutID = setTimeout(()=>{
-                    this.setState({sidePane:undefined,isSidePaneClosing:false})
+                    const cb = this.state.sidePane?.onClose
+                    typeof cb === "function" && cb()
+                    this.setState({sidePane:undefined,isSidePaneClosing:false},callback)
                 },this.props.timeoutMS)
             })
         }
+        return shouldClose
     }
 
 
@@ -134,7 +138,7 @@ export class SlidingPane extends React.Component<CustomSlidingPaneProps, CustomS
             <div>
                 {this.props.sideBySide?null:<div onClick={this.props.onClose} style={{transition:"background-color " + this.props.timeoutMS + "ms",zIndex:this.props.zIndex}} className={classnames(["unp-sliding-pane-background", {transparent: !this.state.isOpen},this.props.backgroundClassName])}/>}
 
-                <div className={classnames("unp-sliding-pane",{"side-by-side":this.props.sideBySide},{closing:!this.state.isOpen},this.props.className)} style={{width:this.props.screenWidth,transition:"transform " + this.props.timeoutMS + "ms, width " + this.props.timeoutMS+"ms",zIndex:this.props.zIndex + Z_INDEX_STEP}}>
+                <div className={classnames("unp-sliding-pane",{"side-by-side":this.props.sideBySide},{closing:!this.state.isOpen},{"unp-no-shadow":this.props.sideBySide},this.props.className)} style={{width:this.props.screenWidth,transition:"transform " + this.props.timeoutMS + "ms, width " + this.props.timeoutMS+"ms",zIndex:this.props.zIndex + Z_INDEX_STEP}}>
 
                     <div ref={this.contentRef } className={classnames("unp-sliding-pane-content",this.props.contentClassName)} style={{minWidth:contentWidth,width:contentWidth}}>
 

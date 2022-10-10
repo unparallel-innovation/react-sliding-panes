@@ -16,8 +16,8 @@ npm install @unparallel/react-sliding-panes
 Basic usage example showing all the features
 
 ```typescript jsx
-import {Pane, PaneManager, PaneManagerControls, ViewMode} from "@unparallel/sliding-panes";
-import "@unparallel/sliding-panes/dist/main.css";
+import {Pane, PaneManager, PaneManagerControls, ViewMode} from "@unparallel/react-sliding-panes";
+import "@unparallel/react-sliding-panes/dist/main.css";
 
 interface SideContentProps {
     title: string,
