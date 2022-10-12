@@ -5,7 +5,7 @@ import type {PaneManagerControls, SidePane} from "../PaneManager";
 
 
 
-type childrenAttribute = (paneControls:PaneManagerControls)=> React.ReactNode
+type childrenAttribute = (paneManagerControls:PaneManagerControls)=> React.ReactNode
 
 
 
@@ -110,7 +110,7 @@ export class SlidingPane extends React.Component<CustomSlidingPaneProps, CustomS
 
         if(this.state.sidePane){
             return (
-                <SlidingPane zIndex={this.props.zIndex + Z_INDEX_STEP} ref={e=>{this.sidePaneRef = e}} fullscreen={false} screenWidth={"100%"} sideBySide={true} isClosing={this.state.isSidePaneClosing} contentWidth={this.props.contentWidth} timeoutMS={this.props.timeoutMS}>
+                <SlidingPane zIndex={this.props.zIndex + Z_INDEX_STEP} ref={e=>{this.sidePaneRef = e}} fullscreen={false} screenWidth={"100%"} sideBySide={true} isClosing={this.state.isSidePaneClosing} contentWidth={this.props.contentWidth} timeoutMS={this.props.timeoutMS} className={this.props.className} contentClassName={this.props.contentClassName}>
                     {(paneControls) => {
                         return this.state.sidePane?.content({
                             closeSidePane:this.closeSidePane,

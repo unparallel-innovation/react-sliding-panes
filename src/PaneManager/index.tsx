@@ -95,7 +95,6 @@ class PaneManager extends React.Component<PaneManagerProps, PaneManagerState>{
         this.setSidePane = this.setSidePane.bind(this)
         this.closeSidePane = this.closeSidePane.bind(this)
         this.closeLastPane = this.closeLastPane.bind(this)
-
         this.paneRefs = []
         this.contentRef = React.createRef()
         this.state = {
@@ -118,6 +117,8 @@ class PaneManager extends React.Component<PaneManagerProps, PaneManagerState>{
         baseZIndex:2000,
         paneStartPadding: 0
     }
+
+
 
 
     addPane(pane: Pane):void {
@@ -299,7 +300,6 @@ class PaneManager extends React.Component<PaneManagerProps, PaneManagerState>{
                         setSidePane: this.setSidePane,
                         closeSidePane: this.closeSidePane,
                         addPane: this.addPane
-
                     })
                 ))}
             </SlidingPane>
@@ -362,8 +362,8 @@ class PaneManager extends React.Component<PaneManagerProps, PaneManagerState>{
                     addPane:this.addPane,
                     closeLastPane:this.closeLastPane,
                     closePane:this.closePane,
-                    closeSidePane:()=>{},
-                    setSidePane:()=>{}
+                    setSidePane: this.setSidePane,
+                    closeSidePane: this.closeSidePane
                 })}
                 {this.renderPanes()}
             </div
