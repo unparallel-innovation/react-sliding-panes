@@ -18,6 +18,7 @@ interface CustomSlidingPaneProps {
     zIndex:number,
     timeoutMS:number,
     fullscreen: boolean,
+    onSidePaneOpen?:(sidePane:SidePane)=>void,
     onClose?: ()=>void,
     className?: string,
     backgroundClassName?:string,
@@ -34,8 +35,6 @@ interface CustomSlidingPaneState {
 
 }
 
-
-
 export class SlidingPane extends React.Component<CustomSlidingPaneProps, CustomSlidingPaneState>{
     private timeoutID: number | undefined;
     public contentRef: React.RefObject<HTMLDivElement>;
@@ -47,6 +46,7 @@ export class SlidingPane extends React.Component<CustomSlidingPaneProps, CustomS
 
         this.setSidePane = this.setSidePane.bind(this)
         this.closeSidePane = this.closeSidePane.bind(this)
+        this.updateSidePaneProps = this.updateSidePaneProps.bind(this)
         this.contentRef = React.createRef();
         this.sidePaneRef = null;
         this.state = {
@@ -56,10 +56,24 @@ export class SlidingPane extends React.Component<CustomSlidingPaneProps, CustomS
         }
     }
 
+
+
+
     static defaultProps = {
         zIndex: 100
     }
 
+    updateSidePaneProps(props: object){
+
+            this.setState((state)=>{
+                if(state.sidePane){
+                    const sidePane = {...state.sidePane, props}
+                    return {sidePane}
+                }
+                return null
+            })
+
+    }
 
    setSidePane(sidePane:SidePane){
         if(this.props.fullscreen){
@@ -73,7 +87,7 @@ export class SlidingPane extends React.Component<CustomSlidingPaneProps, CustomS
 
         this.setState({
             sidePane
-        })
+        },()=>{this.props.onSidePaneOpen?.(sidePane)})
 
     }
 
@@ -81,6 +95,8 @@ export class SlidingPane extends React.Component<CustomSlidingPaneProps, CustomS
         const shouldClose = !this.state.sidePane?.shouldClose || this.state.sidePane.shouldClose()
         if(shouldClose){
             this.setState({isSidePaneClosing:true},()=>{
+                const cb = this.state.sidePane?.willClose
+                typeof cb === "function" && cb()
                 this.timeoutID = setTimeout(()=>{
                     const cb = this.state.sidePane?.onClose
                     typeof cb === "function" && cb()
@@ -110,18 +126,23 @@ export class SlidingPane extends React.Component<CustomSlidingPaneProps, CustomS
 
         if(this.state.sidePane){
             return (
-                <SlidingPane zIndex={this.props.zIndex + Z_INDEX_STEP} ref={e=>{this.sidePaneRef = e}} fullscreen={false} screenWidth={"100%"} sideBySide={true} isClosing={this.state.isSidePaneClosing} contentWidth={this.props.contentWidth} timeoutMS={this.props.timeoutMS} className={this.props.className} contentClassName={this.props.contentClassName}>
-                    {(paneControls) => {
-                        return this.state.sidePane?.content({
-                            closeSidePane:this.closeSidePane,
-                            addPane:()=>{},
-                            closePane:()=>{},
-                            closeLastPane:()=>{},
-                            setSidePane:()=>{}
-                        })
+                <div className={"unp-sliding-pane-content-side-by-side-content"}>
+                    <SlidingPane zIndex={this.props.zIndex + Z_INDEX_STEP} ref={e=>{this.sidePaneRef = e}} fullscreen={false} screenWidth={"100%"} sideBySide={true} isClosing={this.state.isSidePaneClosing} contentWidth={this.props.contentWidth} timeoutMS={this.props.timeoutMS} className={this.props.className} contentClassName={this.props.contentClassName}>
+                        {(paneControls) => {
+                            const sidePane = this.state.sidePane
+                            return sidePane?.content({
+                                closeSidePane:this.closeSidePane,
+                                addPane:()=>{},
+                                closePane:()=>{},
+                                closeLastPane:()=>{},
+                                setSidePane:()=>{},
+                                updateSidePaneProps:this.updateSidePaneProps,
+                                updateLastPaneProps:(props)=>undefined
+                            },sidePane?.props)
 
-                    }}
-                </SlidingPane>
+                        }}
+                    </SlidingPane>
+                </div>
             )
         }
 
@@ -147,13 +168,14 @@ export class SlidingPane extends React.Component<CustomSlidingPaneProps, CustomS
                              closeSidePane:this.closeSidePane,
                              addPane:()=>{},
                              closeLastPane:()=>{},
-                             closePane:()=>{}
+                             closePane:()=>{},
+                             updateSidePaneProps:this.updateSidePaneProps,
+                             updateLastPaneProps:(props)=>undefined
                          })}
 
                     </div>
-                    <div className={"unp-sliding-pane-content-side-by-side-content"}>
-                        {this.renderSidePane()}
-                    </div>
+                   {this.renderSidePane()}
+
 
 
                 </div>

@@ -61,11 +61,11 @@ function Content({title,paneManagerControls}:ContentProps){
     return(
         <div>
             <h1>{title}</h1>
-            <button onClick={closeLastPane}>Close Pane</button>
-            <button onClick={closeSidePane}>Close side Pane</button>
-            <button onClick={setSidePaneBtn}>Set side pane</button>
-            <button onClick={openNewPane}>Open new pane</button>
-            <button onClick={openNewPaneAsFullscreen}>Open new pane as fullscreen</button>
+            <button onClick={()=>closeLastPane()}>Close Pane</button>
+            <button onClick={()=>closeSidePane()}>Close side Pane</button>
+            <button onClick={()=>setSidePaneBtn()}>Set side pane</button>
+            <button onClick={()=>openNewPane()}>Open new pane</button>
+            <button onClick={()=>openNewPaneAsFullscreen()}>Open new pane as fullscreen</button>
         </div>
 
     )
@@ -100,7 +100,7 @@ Wrapper component which will provide the "paneManagerControls" object containing
 
 | Name      | Type | is Optional | Default Value | Description |
 | ----------- | ----------- | ---- | --- | --- |
-| children      | (paneManagerControls)=>React.ReactNode     | no |  | Render of Pane Manager root content, the object "paneManagerControls" is provided and could be used to launch new panes |
+| children      | (paneManagerControls: PaneManagerControls)=>React.ReactNode     | no |  | Render of Pane Manager root content, the object "paneManagerControls" is provided and could be used to launch new panes |
 | minPaneDistance   | number        | yes |  10 | Minimum distance (in px) between panes |
 | maxPaneDistance   | number        | yes |  200 | Maximum distance (in px) between panes |
 | paneWidth   | number        | yes |  300 | Width for each pane  |
@@ -110,6 +110,10 @@ Wrapper component which will provide the "paneManagerControls" object containing
 | paneClassName | string | yes | null | Custom classname for sliding pane container |
 | paneBackgroundClassName | string | yes | null | Custom classname for sliding pane background |
 | paneContentClassName | string | yes | null | Custom classname for sliding pane content |
+| onPaneClose | (index:number)=>void | yes | null | Event fired after closing the pane |
+| paneWillClose | (index: number)=>void | yes | null | Event fired before closing a pane |
+| onPaneOpen | (index: number, pane:Pane)=>void | yes | null | Event fired after open the pane |
+| onSidePaneOpen | (paneIndex: number, sidePane:SidePane)=>void | yes | null | Event fired after opened the side pane |
 
 ## Structures
 
@@ -124,6 +128,8 @@ Object containing several methods to control the behaviour of the Pane manager
 | closePane | (index: number)=>void | Close a specific pane |
 | setSidePane | (sidePane: SidePane)=>void | Add a side pane to the last pane |
 | closeSidePane | ()=>void | Close side pane |
+| updateLastPaneProps | (props:object)=>void | Update props sent to the last pane, this update will re fire a render of the pane content |
+| updateSidePaneProps | (props:object)=>void | Update props sent to the side pane, this update will re fire a render of the side pane content |
 
 ### Pane
 
@@ -131,9 +137,13 @@ Object describing a pane
 
 | Name      | Type | is Optional | Default Value | Description |
 | --- | --- | --- | --- | --- |
-| content | (paneManagerControls)=>React.ReactNode | no | null | Content of the new pane, a "paneManagerControls" object will be sent to the content |
+| content | (paneManagerControls: PaneManagerControls, props: object)=>React.ReactNode | no | null | Content of the new pane, a "paneManagerControls" object will be sent to the content |
 | viewMode | ViewMode | yes | ViewMode.Default | View mode of the new pane, allowed options ViewMode.Default or ViewMode.Fullscreen |
-| shouldClose | ()=>boolean | yes | ()=>true | Confirmation step before closing the pane
+| shouldClose | ()=>boolean | yes | ()=>true | Confirmation step before closing the pane |
+| onClose | ()=>void | yes | | Fired after closing the pane |
+| willClose | ()=>void | yes | | Fired before closing the pane |
+| props  | object | yes || Properties object sent on the content method |
+
 
 ### SidePane
 
@@ -143,6 +153,9 @@ Object describing a side pane
 | --- | --- | --- | --- | --- |
 | content | (paneManagerControls)=>React.ReactNode | no | null | Content of the new pane, a "paneManagerControls" object is sent to the content |
 | shouldClose | ()=>boolean | yes | ()=>true | Confirmation step before closing the pane |
+| onClose | ()=>void | yes | | Fired after closing the side pane |
+| willClose | ()=>void | yes | | Fired before closing the side pane |
+| props  | object | yes || Properties object sent on the content method |
 
 # Development
 

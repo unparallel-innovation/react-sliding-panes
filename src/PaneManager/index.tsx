@@ -5,7 +5,7 @@ import {SlidingPane} from "../SlidingPane";
 import lodash from 'lodash'
 
 
-type PaneContent = (paneManagerControls: PaneManagerControls)=>React.ReactNode
+type PaneContent = (paneManagerControls: PaneManagerControls, props?:object)=>React.ReactNode
 
 
 
@@ -21,18 +21,24 @@ export enum ViewMode {
 
 }
 
-export interface SidePane {
+
+export interface SidePane{
     content: PaneContent,
     shouldClose?:()=>boolean,
-    onClose?:()=>void
+    onClose?:()=>void,
+    willClose?:()=>void,
+    props?:object
 }
+
 
 
 export interface Pane {
     content: PaneContent,
     viewMode?: ViewMode,
     shouldClose?:()=>boolean,
-    onClose?:()=>void
+    onClose?:()=>void,
+    willClose?:()=>void,
+    props?:object
 }
 
 
@@ -57,7 +63,9 @@ interface PaneManagerProps {
     paneBackgroundClassName?:string,
     paneContentClassName?: string,
     onPaneClose?:(index: number)=>void,
-    onPaneOpen?:(index: number, pane:Pane)=>void
+    onPaneOpen?:(index: number, pane:Pane)=>void,
+    onSidePaneOpen?:(paneIndex: number, sidePane:SidePane)=>void,
+    paneWillClose?:(index: number)=>void
 }
 
 
@@ -66,7 +74,10 @@ export interface PaneManagerControls {
     closePane: (index:number,callback?:()=>void)=>void,
     closeLastPane: (callback?:()=>void)=>void,
     setSidePane: (sidePane: SidePane)=>void,
-    closeSidePane :()=>void
+    closeSidePane :()=>void,
+    updateLastPaneProps: (props:object)=>void,
+    updateSidePaneProps: (props:object)=>void
+
 }
 
 
@@ -95,6 +106,9 @@ class PaneManager extends React.Component<PaneManagerProps, PaneManagerState>{
         this.setSidePane = this.setSidePane.bind(this)
         this.closeSidePane = this.closeSidePane.bind(this)
         this.closeLastPane = this.closeLastPane.bind(this)
+        this.updateSidePaneProps = this.updateSidePaneProps.bind(this)
+        this.updateLastPaneProps = this.updateLastPaneProps.bind(this)
+
         this.paneRefs = []
         this.contentRef = React.createRef()
         this.state = {
@@ -150,6 +164,22 @@ class PaneManager extends React.Component<PaneManagerProps, PaneManagerState>{
 
     }
 
+    updatePaneProps(index:number, props: object){
+        if(index>=0 && this.state.panes.length > index){
+            this.setState((state)=>{
+                const panes = [...state.panes]
+                panes[index] = {...panes[index],props}
+                return {panes}
+            })
+
+        }
+    }
+
+    updateLastPaneProps(props: object){
+        this.updatePaneProps(this.state.panes.length - 1,props)
+    }
+
+
     componentDidMount() {
         if(this.contentRef.current){
             this.resizeObserver.observe(this.contentRef.current)
@@ -164,7 +194,6 @@ class PaneManager extends React.Component<PaneManagerProps, PaneManagerState>{
 
 
     closePane(paneIndex: number , callback?:()=>void): void{
-        console.log("closePane",callback)
         if(paneIndex<0){
             return
         }
@@ -193,6 +222,12 @@ class PaneManager extends React.Component<PaneManagerProps, PaneManagerState>{
 
             this.setIsPaneIsClosing(paneIndexesToClose[paneIndexesToClose.length-1],()=>{
                 this.setPaneDistance()
+                const lastIndex = paneIndexesToClose[paneIndexesToClose.length -1]
+                for(let index=lastIndex ;index>=paneIndexesToClose[0];index--){
+                    this.props.paneWillClose?.(index);
+                    const cb = this.state.panes[index]?.willClose
+                    typeof cb === "function" && cb()
+                }
                 setTimeout(()=>{
                     this.setState(state=>{
                         const panes = [...state.panes]
@@ -271,7 +306,6 @@ class PaneManager extends React.Component<PaneManagerProps, PaneManagerState>{
     }
 
     closeLastPane(callback?: (() => void)){
-        console.log("closeLastPane",callback)
         this.closePane(this.state.panes.length - 1,callback)
     }
 
@@ -292,6 +326,7 @@ class PaneManager extends React.Component<PaneManagerProps, PaneManagerState>{
                 className={this.props.paneClassName}
                 backgroundClassName={this.props.paneBackgroundClassName}
                 contentClassName={this.props.paneContentClassName}
+                onSidePaneOpen={(sidePane => this.props.onSidePaneOpen?.(index,sidePane))}
             >
                 {(paneControls => (
                     pane.content({
@@ -299,8 +334,10 @@ class PaneManager extends React.Component<PaneManagerProps, PaneManagerState>{
                         closeLastPane:this.closeLastPane,
                         setSidePane: this.setSidePane,
                         closeSidePane: this.closeSidePane,
-                        addPane: this.addPane
-                    })
+                        addPane: this.addPane,
+                        updateLastPaneProps: this.updateLastPaneProps,
+                        updateSidePaneProps: this.updateSidePaneProps
+                    },pane.props)
                 ))}
             </SlidingPane>
 
@@ -325,6 +362,15 @@ class PaneManager extends React.Component<PaneManagerProps, PaneManagerState>{
         }
 
     }
+
+    updateSidePaneProps(props: object){
+        if(this.paneRefs!== null){
+            const paneInstance = this.paneRefs[this.state.panes.length - 1]
+            paneInstance?.updateSidePaneProps(props);
+        }
+
+    }
+
 
     getLastPaneXPosition(): number | null{
         if(this.state.panes.length > 0){
@@ -363,7 +409,9 @@ class PaneManager extends React.Component<PaneManagerProps, PaneManagerState>{
                     closeLastPane:this.closeLastPane,
                     closePane:this.closePane,
                     setSidePane: this.setSidePane,
-                    closeSidePane: this.closeSidePane
+                    closeSidePane: this.closeSidePane,
+                    updateLastPaneProps: this.updateLastPaneProps,
+                    updateSidePaneProps: this.updateSidePaneProps
                 })}
                 {this.renderPanes()}
             </div
