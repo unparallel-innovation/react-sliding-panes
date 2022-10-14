@@ -32,7 +32,7 @@
     "clean": "rm -rf dist node_modules .parcel-cache"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@babel/core": "^7.19.3",
     "@babel/preset-react": "^7.18.6",
