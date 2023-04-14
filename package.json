@@ -1,6 +1,6 @@
 {
   "name": "@unparallel/react-sliding-panes",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Sliding pane component used for react, providing the following features: stack panes in top of each other, open a pane side by side and open a pane in fullscreen mode",
   "source": "src/index.ts",
   "main": "dist/main.js",
