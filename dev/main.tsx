@@ -1,4 +1,4 @@
-import React, {useEffect} from "react";
+import React, {useEffect, useState} from "react";
 
 import './main.css'
 import "../src/main.scss"
@@ -33,7 +33,7 @@ function SideContent({paneManagerControls, title,n}:SideContentProps){
 }
 
 function Content({title,paneManagerControls,n}:ContentProps){
-    const {setSidePane, closeSidePane,addPane,closeLastPane} = paneManagerControls
+    const {setSidePane, closeSidePane,addPane,closeLastPane,compressPanes,decompressPanes} = paneManagerControls
 
     function setSidePaneBtn(){
         setSidePane({
@@ -74,6 +74,9 @@ function Content({title,paneManagerControls,n}:ContentProps){
             <button onClick={()=>{setSidePaneBtn()}}>Set side pane</button>
             <button onClick={()=>{openNewPane()}}>Open new pane</button>
             <button onClick={()=>{openNewPaneAsFullscreen()}}>Open new pane as fullscreen</button>
+            <button onClick={()=>{compressPanes()}}>Compress panes</button>
+            <button onClick={()=>{decompressPanes()}}>Decompress panes</button>
+
         </div>
 
     )
@@ -81,8 +84,9 @@ function Content({title,paneManagerControls,n}:ContentProps){
 
 export const Main = function(){
 
+
     const pane:Pane = {
-        content:((paneManagerControls) =><Content title={"First Pane"}   paneManagerControls={paneManagerControls}/> ),
+        content:((paneManagerControls) =><Content title={"First pane"} paneManagerControls={paneManagerControls} />),
         shouldClose:()=>confirm("Should close pane?"),
         onClose:()=>{console.log("Closed root pane")},
         willClose:()=>{console.log("Root pane will")}
@@ -109,6 +113,7 @@ export const Main = function(){
             {(paneManagerControls)=>(
                 <div>
                     <h1>Root Content</h1>
+
                     <button onClick={()=>{paneManagerControls.addPane(pane)}}>Add first pane</button>
                 </div>
             )}

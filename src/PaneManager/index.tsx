@@ -46,7 +46,8 @@ export interface Pane {
 interface PaneManagerState {
     panes: Pane[],
     paneDistance: number,
-    isPaneClosing: Array<undefined | boolean>
+    isPaneClosing: Array<undefined | boolean>,
+    compressedPanes:boolean
 }
 
 
@@ -66,6 +67,7 @@ interface PaneManagerProps {
     onPaneOpen?:(index: number, pane:Pane)=>void,
     onSidePaneOpen?:(paneIndex: number, sidePane:SidePane)=>void,
     paneWillClose?:(index: number)=>void
+
 }
 
 
@@ -76,7 +78,9 @@ export interface PaneManagerControls {
     setSidePane: (sidePane: SidePane)=>void,
     closeSidePane :()=>void,
     updateLastPaneProps: (props:object)=>void,
-    updateSidePaneProps: (props:object)=>void
+    updateSidePaneProps: (props:object)=>void,
+    compressPanes:()=>void,
+    decompressPanes:()=>void
 
 }
 
@@ -108,14 +112,19 @@ class PaneManager extends React.Component<PaneManagerProps, PaneManagerState>{
         this.closeLastPane = this.closeLastPane.bind(this)
         this.updateSidePaneProps = this.updateSidePaneProps.bind(this)
         this.updateLastPaneProps = this.updateLastPaneProps.bind(this)
+        this.compressPanes = this.compressPanes.bind(this)
+        this.decompressPanes = this.decompressPanes.bind(this)
 
         this.paneRefs = []
         this.contentRef = React.createRef()
         this.state = {
             panes:[],
             paneDistance:props.maxPaneDistance,
-            isPaneClosing: []
+            isPaneClosing: [],
+            compressedPanes:false
         }
+
+
 
         this.resizeObserver = new ResizeObserver(lodash.debounce(this.setPaneDistance,200))
 
@@ -132,6 +141,13 @@ class PaneManager extends React.Component<PaneManagerProps, PaneManagerState>{
         paneStartPadding: 0
     }
 
+
+    compressPanes(){
+        this.setState({compressedPanes:true})
+    }
+    decompressPanes(){
+        this.setState({compressedPanes:false})
+    }
 
 
 
@@ -179,6 +195,11 @@ class PaneManager extends React.Component<PaneManagerProps, PaneManagerState>{
         this.updatePaneProps(this.state.panes.length - 1,props)
     }
 
+    componentDidUpdate(prevProps: Readonly<PaneManagerProps>, prevState: Readonly<PaneManagerState>, snapshot?: any) {
+        if(prevState.compressedPanes !== this.state.compressedPanes){
+            this.setPaneDistance()
+        }
+    }
 
     componentDidMount() {
         if(this.contentRef.current){
@@ -285,7 +306,9 @@ class PaneManager extends React.Component<PaneManagerProps, PaneManagerState>{
             if(paneIndex >= 0){
                 const realPaneCount = paneIndex + 1
                 const lastPane = this.state.panes[paneIndex]
-
+                if(this.state.compressedPanes){
+                    return this.props.minPaneDistance
+                }
                 if(lastPane.viewMode === ViewMode.FullScreen && !isLastPaneClosing){
                     return this.props.minPaneDistance;
                 }
@@ -336,7 +359,9 @@ class PaneManager extends React.Component<PaneManagerProps, PaneManagerState>{
                         closeSidePane: this.closeSidePane,
                         addPane: this.addPane,
                         updateLastPaneProps: this.updateLastPaneProps,
-                        updateSidePaneProps: this.updateSidePaneProps
+                        updateSidePaneProps: this.updateSidePaneProps,
+                        compressPanes:this.compressPanes,
+                        decompressPanes:this.decompressPanes
                     },pane.props)
                 ))}
             </SlidingPane>
@@ -411,7 +436,9 @@ class PaneManager extends React.Component<PaneManagerProps, PaneManagerState>{
                     setSidePane: this.setSidePane,
                     closeSidePane: this.closeSidePane,
                     updateLastPaneProps: this.updateLastPaneProps,
-                    updateSidePaneProps: this.updateSidePaneProps
+                    updateSidePaneProps: this.updateSidePaneProps,
+                    compressPanes:this.compressPanes,
+                    decompressPanes:this.decompressPanes
                 })}
                 {this.renderPanes()}
             </div
