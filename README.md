@@ -121,18 +121,18 @@ Wrapper component which will provide the "paneManagerControls" object containing
 
 Object containing several methods to control the behaviour of the Pane manager
 
-| Name      | Type | Description                                                           |
-| ----------- | -------- |-----------------------------------------------------------------------|
-| addPane | (pane:Pane)=>void | Used to add a new pane                                                |
-| closeLastPane | ()=>void | Close the last pane                                                   |
-| closePane | (index: number)=>void | Close a specific pane                                                 |
-| setSidePane | (sidePane: SidePane)=>void | Add a side pane to the last pane                                      |
-| closeSidePane | ()=>void | Close side pane                                                       |
-| updateLastPaneProps | (props:object)=>void | Update props sent to the last pane, this update will re fire a render of the pane content |
-| updateSidePaneProps | (props:object)=>void | Update props sent to the side pane, this update will re fire a render of the side pane content |
-| compressPanes | ()=>void | Forces all panes to collapses until the meet the "minPaneDistance" regarding its distance |
-| decompressPanes | ()=>void | Set panes distance to their default distance   |
-
+| Name                | Type                       | Description                                                                                    |
+|---------------------|----------------------------|------------------------------------------------------------------------------------------------|
+| addPane             | (pane:Pane)=>void          | Used to add a new pane                                                                         |
+| closeLastPane       | ()=>void                   | Close the last pane                                                                            |
+| closePane           | (index: number)=>void      | Close a specific pane                                                                          |
+| setSidePane         | (sidePane: SidePane)=>void | Add a side pane to the last pane                                                               |
+| closeSidePane       | ()=>void                   | Close side pane                                                                                |
+| updateLastPaneProps | (props:object)=>void       | Update props sent to the last pane, this update will re fire a render of the pane content      |
+| updateSidePaneProps | (props:object)=>void       | Update props sent to the side pane, this update will re fire a render of the side pane content |
+| compressPanes       | ()=>void                   | Forces all panes to collapses until the meet the "minPaneDistance" regarding its distance      |
+| decompressPanes     | ()=>void                   | Set panes distance to their default distance                                                   |
+| getPaneCount        | ()=>number or null          | Number of panes stacked on the pane manager                                                    |
 ### Pane
 
 Object describing a pane

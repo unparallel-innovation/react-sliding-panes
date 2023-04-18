@@ -139,7 +139,8 @@ export class SlidingPane extends React.Component<CustomSlidingPaneProps, CustomS
                                 compressPanes:()=>{},
                                 decompressPanes:()=>{},
                                 updateSidePaneProps:this.updateSidePaneProps,
-                                updateLastPaneProps:(props)=>undefined
+                                updateLastPaneProps:(props)=>undefined,
+                                getPaneCount:()=>null
                             },sidePane?.props)
 
                         }}
@@ -174,7 +175,8 @@ export class SlidingPane extends React.Component<CustomSlidingPaneProps, CustomS
                              compressPanes:()=>{},
                              decompressPanes:()=>{},
                              updateSidePaneProps:this.updateSidePaneProps,
-                             updateLastPaneProps:(props)=>undefined
+                             updateLastPaneProps:(props)=>undefined,
+                             getPaneCount:()=>null
                          })}
 
                     </div>

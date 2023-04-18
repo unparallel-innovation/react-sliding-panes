@@ -52,14 +52,14 @@ interface PaneManagerState {
 
 
 
-interface PaneManagerProps {
+export interface PaneManagerProps {
     minPaneDistance: number,
     maxPaneDistance: number,
-    children: PaneManagerContent,
     paneWidth:number,
     timeoutMS: number,
-    baseZIndex: number,
     paneStartPadding: number,
+    children: PaneManagerContent,
+    baseZIndex: number,
     paneClassName?: string,
     paneBackgroundClassName?:string,
     paneContentClassName?: string,
@@ -80,7 +80,8 @@ export interface PaneManagerControls {
     updateLastPaneProps: (props:object)=>void,
     updateSidePaneProps: (props:object)=>void,
     compressPanes:()=>void,
-    decompressPanes:()=>void
+    decompressPanes:()=>void,
+    getPaneCount:()=>number | null
 
 }
 
@@ -97,7 +98,6 @@ class PaneManager extends React.Component<PaneManagerProps, PaneManagerState>{
     private paneRefs: SlidingPane[] | null[];
     private contentRef: React.RefObject<HTMLDivElement>;
     private resizeObserver: ResizeObserver;
-
 
 
     constructor(props: PaneManagerProps | Readonly<PaneManagerProps>) {
@@ -123,6 +123,7 @@ class PaneManager extends React.Component<PaneManagerProps, PaneManagerState>{
             isPaneClosing: [],
             compressedPanes:false
         }
+
 
 
 
@@ -361,7 +362,8 @@ class PaneManager extends React.Component<PaneManagerProps, PaneManagerState>{
                         updateLastPaneProps: this.updateLastPaneProps,
                         updateSidePaneProps: this.updateSidePaneProps,
                         compressPanes:this.compressPanes,
-                        decompressPanes:this.decompressPanes
+                        decompressPanes:this.decompressPanes,
+                        getPaneCount:()=>this.state.panes.length
                     },pane.props)
                 ))}
             </SlidingPane>
@@ -438,7 +440,8 @@ class PaneManager extends React.Component<PaneManagerProps, PaneManagerState>{
                     updateLastPaneProps: this.updateLastPaneProps,
                     updateSidePaneProps: this.updateSidePaneProps,
                     compressPanes:this.compressPanes,
-                    decompressPanes:this.decompressPanes
+                    decompressPanes:this.decompressPanes,
+                    getPaneCount:()=>this.state.panes.length
                 })}
                 {this.renderPanes()}
             </div
