@@ -64,15 +64,13 @@ export class SlidingPane extends React.Component<CustomSlidingPaneProps, CustomS
     }
 
     updateSidePaneProps(props: object){
-
-            this.setState((state)=>{
-                if(state.sidePane){
-                    const sidePane = {...state.sidePane, props}
-                    return {sidePane}
-                }
-                return null
-            })
-
+        this.setState((state)=>{
+            if(state.sidePane){
+                const sidePane = {...state.sidePane, props: {...state.sidePane.props, ...props}}
+                return {sidePane}
+            }
+            return null
+        })
     }
 
    setSidePane(sidePane:SidePane){
